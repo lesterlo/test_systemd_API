@@ -8,5 +8,8 @@ Restart=always
 StandardOutput=journal
 StandardError=journal
 
+WatchdogSec=30s
+Restart=on-failure
+
 [Install]
 WantedBy=multi-user.target

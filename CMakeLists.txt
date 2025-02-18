@@ -7,4 +7,3 @@ message(STATUS ${PROJECT_NAME})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin) # Output all the executable to ./bin directory
 
 add_subdirectory(proj_1)
-add_subdirectory(proj_2)

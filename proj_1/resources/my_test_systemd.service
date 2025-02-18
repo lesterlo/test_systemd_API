@@ -1,0 +1,12 @@
+[Unit]
+Description=My C++ Application
+After=network.target
+
+[Service]
+ExecStart=/opt/test/test_systemd/test_systemd
+Restart=always
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

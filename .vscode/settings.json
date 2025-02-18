@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "iostream": "cpp"
+    },
+    "cmake.configureOnOpen": true,
+    "cmake.generator": "Unix Makefiles",
+    // "cmake.buildTask": true,
+    // "cmake.environment": {
+    //     "CLICOLOR_FORCE": "1"
+    // }
+}

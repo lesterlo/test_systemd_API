@@ -1,65 +1,44 @@
-#include <systemd/sd-journal.h>
-#include <systemd/sd-daemon.h>
 #include <unistd.h>
 #include <string>
 #include <iostream>
+#include "SysDLogger.h"
 
 bool is_running_with_systemd() {
     return getenv("INVOCATION_ID") != nullptr;
 }
 
+// void print_message(int counter)
+// {
+//     std::array<char, 64> buffer;
+//     auto result = std::format_to_n(buffer.begin(), buffer.size() - 1, "Debug message #{}", counter);
+//     *result.out = '\0';  // Null-terminate safely
+
+//     sd_journal_send("MESSAGE=%s", buffer.data(), "PRIORITY=%i", LOG_DEBUG, NULL);
+// }
+
 void print_message(int counter)
 {
-    std::string message;
-
-    message = "Debug message #" + std::to_string(counter);
-    sd_journal_send("MESSAGE=%s", message.c_str(), "PRIORITY=%i", LOG_DEBUG, NULL);
-
-    message = "Info message #" + std::to_string(counter);
-    sd_journal_send("MESSAGE=%s", message.c_str(), "PRIORITY=%i", LOG_INFO, NULL);
-
-    message = "Notice message #" + std::to_string(counter);
-    sd_journal_send("MESSAGE=%s", message.c_str(), "PRIORITY=%i", LOG_NOTICE, NULL);
-
-    message = "Warning message #" + std::to_string(counter);
-    sd_journal_send("MESSAGE=%s", message.c_str(), "PRIORITY=%i", LOG_WARNING, NULL);
-
-    message = "Error message #" + std::to_string(counter);
-    sd_journal_send("MESSAGE=%s", message.c_str(), "PRIORITY=%i", LOG_ERR, NULL);
-
-    message = "Critical message #" + std::to_string(counter);
-    sd_journal_send("MESSAGE=%s", message.c_str(), "PRIORITY=%i", LOG_CRIT, NULL);
-
-    message = "Alert message #" + std::to_string(counter);
-    sd_journal_send("MESSAGE=%s", message.c_str(), "PRIORITY=%i", LOG_ALERT, NULL);
-
-    message = "Emergency message #" + std::to_string(counter);
-    sd_journal_send("MESSAGE=%s", message.c_str(), "PRIORITY=%i", LOG_EMERG, NULL);
-    
+    LOGGING(LOG_DEBUG,"Debug message #{}", counter);
+    LOGGING(LOG_INFO,"Info message #{}",counter);
+    LOGGING(LOG_NOTICE,"Notice message #{}",counter);
+    LOGGING(LOG_WARNING,"Warning message #{}",counter);
+    LOGGING(LOG_ERR, "Error message #{}",counter);
+    LOGGING(LOG_CRIT,"Critical message #{}",counter);
+    LOGGING(LOG_ALERT,"Alert message #{}",counter);
+    LOGGING(LOG_EMERG,"Emergency message #{}",counter);
 }
 
 int main() {
     int counter = 0;
 
-    if (is_running_with_systemd()) {
-        sd_notify(0, "READY=1");
-    }
+    SysDLogger::getInstance().sysReady();
 
     while (true) {
         
+        SysDLogger::getInstance().feedWatchdog();
+        
         print_message(counter);
         
-
-        if (is_running_with_systemd()) 
-        {
-            sd_notify(0, "WATCHDOG=1");
-
-            sd_journal_send("MESSAGE=%s", ("[systemd] loop complete"+std::to_string(counter)).c_str(), "PRIORITY=%i", LOG_INFO, NULL);
-        }
-        else
-        {
-            std::cout << "[Raw] loop #" << counter << ": completed" << std::endl;
-        }
 
         counter++;
         sleep(10);  // Avoid overwhelming the system logs

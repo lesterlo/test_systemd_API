@@ -3,7 +3,7 @@ project(test_systemd)
 
 
 # Setup variable
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(EXE_NAME ${PROJECT_NAME}) # setup the executable output name
 

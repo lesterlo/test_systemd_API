@@ -12,6 +12,7 @@
 class SysDLogger
 {
 public:
+    static constexpr int LOG_LINE_LENGTH = 1024;
 
     static SysDLogger& getInstance()
     {
@@ -36,14 +37,30 @@ public:
     template <typename... Args>
     void log(int priority, const char* file, int line, const char* func, std::format_string<Args...> fmt, Args&&... args)
     {
-        std::string message = std::format(fmt, std::forward<Args>(args)...);
-        std::string finalMessage = std::format("[{}:{}, {}()] {}", file, line, func, message);
+        thread_local std::array<char,LOG_LINE_LENGTH> msgBuf;
+
+        // Format the main message into the buffer
+        auto prefixResult = std::format_to_n( msgBuf.begin(), msgBuf.size() - 1, 
+                                         "[{}:{}, {}()] ", file, line, func);
+
+        // Format the actual message after the prefix
+        auto messageResult = std::format_to_n(prefixResult.out, 
+            msgBuf.end() - prefixResult.out - 1, 
+                                          fmt, std::forward<Args>(args)...);
+
+        // Null-terminate manually (in case it's not already terminated)
+        if (messageResult.out < msgBuf.end()) {
+            *messageResult.out = '\0';
+        } else {
+            msgBuf.back() = '\0'; // Ensure null termination if buffer is full
+        }
+
 
         // Send log to journald
         if(_runInSystemd)
-            sd_journal_print(priority, "%s", finalMessage.c_str());
+            sd_journal_print(priority, "%s", msgBuf.data());
         else
-            std::cout << finalMessage << std::endl;
+            std::cout << msgBuf.data() << std::endl;
     }
 
 
